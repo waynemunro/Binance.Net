@@ -28,10 +28,13 @@ namespace Blazor.ServerSide
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var credentialAPIKey = Configuration.GetValue<string>("BinanceAPI:K");
+            var credentialSecretKey = Configuration.GetValue<string>("BinanceAPI:S");
+
             BinanceClient.SetDefaultOptions(new BinanceClientOptions()
             {
                 LogVerbosity = LogVerbosity.Debug,
-                ApiCredentials = new ApiCredentials("Credentials", "Credentials")
+                ApiCredentials = new ApiCredentials(credentialAPIKey, credentialSecretKey)
             });
 
             services.AddRazorPages();

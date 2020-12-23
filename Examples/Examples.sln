@@ -17,11 +17,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Asp.Net", "Asp.Net", "{BAAD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{83DB9D9B-E860-4435-B972-0085D3D75156}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.ServerSide", "Blazor.ServerSide\Blazor.ServerSide.csproj", "{A1185DE7-82B0-42D8-BE3E-E7A5B75204B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.ServerSide", "Blazor.ServerSide\Blazor.ServerSide.csproj", "{A1185DE7-82B0-42D8-BE3E-E7A5B75204B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.DataProvider", "Blazor.DataProvider\Blazor.DataProvider.csproj", "{AA44638F-6399-42C5-AFCD-FE66AB3D5C3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.DataProvider", "Blazor.DataProvider\Blazor.DataProvider.csproj", "{AA44638F-6399-42C5-AFCD-FE66AB3D5C3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.ClientSide", "Blazor.ClientSide\Blazor.ClientSide.csproj", "{58E071ED-D45E-4389-A37B-0C08AE27EA26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.ClientSide", "Blazor.ClientSide\Blazor.ClientSide.csproj", "{58E071ED-D45E-4389-A37B-0C08AE27EA26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
