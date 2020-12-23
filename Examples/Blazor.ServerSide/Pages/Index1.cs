@@ -12,16 +12,11 @@ namespace Blazor.ServerSide.Pages
     {
         private IEnumerable<IBinanceTick> _ticks = new List<IBinanceTick>();
         private UpdateSubscription _subscription;
-
+        private UpdateSubscription _subscriptionKline;
         private IEnumerable<IBinanceKline> _Klines = new List<IBinanceKline>();
-
         private IEnumerable<IBinanceKline> _KlinesClosed = new List<IBinanceKline>();
-
         private IEnumerable<Tuple<string, IBinanceKline>> _KlineSymbol = new List<Tuple<string, IBinanceKline>>();
-
-
         private string SOCKET = "wss://stream.binance.com:9443/ws/ethusdt@kline_1m";
-
         private int RSI_PERIOD = 14;
         private int RSI_OVERBOUGHT = 70;
         private int RSI_OVERSOLD = 30;
@@ -36,9 +31,14 @@ namespace Blazor.ServerSide.Pages
 
         int closeCount = 0;
 
+        public IBinanceStreamKlineData LastKline { get; private set; } 
 
         protected override async Task OnInitializedAsync()
         {
+            var subResultKline = await _dataProvider.SubscribeToKlineUpdatesAsync(HandleKLineUpdates).ConfigureAwait(false);
+            if (subResultKline)
+                _subscriptionKline = subResultKline.Data;
+
             var callResult = await _dataProvider.Get24HPrices().ConfigureAwait(false);
             if (callResult)
                 _ticks = callResult.Data;
@@ -46,6 +46,8 @@ namespace Blazor.ServerSide.Pages
             var subResult = await _dataProvider.SubscribeTickerUpdates(HandleTickUpdates).ConfigureAwait(false);
             if (subResult)
                 _subscription = subResult.Data;
+
+
 
 
             //var callKLinesResult = await _dataProvider.GetKlinesAsync(TRADE_SYMBOL).ConfigureAwait(false);
@@ -58,6 +60,14 @@ namespace Blazor.ServerSide.Pages
             //if (callKLinesResult)
             //    _Klines = callKLinesResult.Data;
 
+
+        }
+
+        private void HandleKLineUpdates(IBinanceStreamKlineData klineData)
+        {
+
+            LastKline = klineData;
+            InvokeAsync(StateHasChanged);
 
         }
 
@@ -74,13 +84,13 @@ namespace Blazor.ServerSide.Pages
 
                 var closedC = _Klines.Where(x => x.CloseTime > DateTime.UtcNow).Count();
 
-                if(closedC > RSI_PERIOD)
+                if (closedC > RSI_PERIOD)
                 {
                     // TODO: Calculate RSI with talib
 
                     //var rsi = 
 
-                    
+
 
                     if (inposition)
                     {
@@ -101,7 +111,7 @@ namespace Blazor.ServerSide.Pages
 
             }
 
-           
+
 
             var lines = _KlinesClosed.Count();
 

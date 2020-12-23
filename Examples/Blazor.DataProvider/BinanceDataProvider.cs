@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Binance.Net.Enums;
 using Binance.Net.Interfaces;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
@@ -12,16 +13,14 @@ namespace Blazor.DataProvider
         private IBinanceClient _client;
         private IBinanceSocketClient _socketClient;
 
+        public IBinanceStreamKlineData LastKline { get; private set; }
+        public Action<IBinanceStreamKlineData> OnKlineData { get; set; }
+
         public BinanceDataProvider(IBinanceClient client, IBinanceSocketClient socketClient)
         {
             _client = client;
             _socketClient = socketClient;
         }
-
-        //public Task<WebCallResult<IEnumerable<IBinanceTick>>> Get24HPrices()
-        //{
-        //    return _client.Spot.Market.Get24HPricesAsync();
-        //}
 
         public async Task<WebCallResult<IEnumerable<IBinanceTick>>> Get24HPrices()
         {
@@ -31,6 +30,15 @@ namespace Blazor.DataProvider
         public Task<CallResult<UpdateSubscription>> SubscribeTickerUpdates(Action<IEnumerable<IBinanceTick>> tickHandler)
         {
             return _socketClient.Spot.SubscribeToAllSymbolTickerUpdatesAsync(tickHandler);
+        }
+
+        public Task<CallResult<UpdateSubscription>> SubscribeToKlineUpdatesAsync(Action<IBinanceStreamKlineData> klineHandler)
+        {           
+            return _socketClient.Spot.SubscribeToKlineUpdatesAsync("BTCUSDT", KlineInterval.OneMinute, data =>
+            {
+                LastKline = data;
+                OnKlineData?.Invoke(data);
+            });
         }
 
         public async Task<WebCallResult<IEnumerable<IBinanceKline>>> GetKlinesAsync(string symbol)
