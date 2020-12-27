@@ -32,22 +32,21 @@ namespace Blazor.DataProvider
             return _socketClient.Spot.SubscribeToAllSymbolTickerUpdatesAsync(tickHandler);
         }
 
-        public Task<CallResult<UpdateSubscription>> SubscribeToKlineUpdatesAsync(Action<IBinanceStreamKlineData> klineHandler)
+        public Task<CallResult<UpdateSubscription>> SubscribeToKlineUpdatesAsync(Action<IBinanceStreamKlineData> klineHandler, string symbol = "BTCUSDT", KlineInterval interval = KlineInterval.OneDay)
         {           
-            return _socketClient.Spot.SubscribeToKlineUpdatesAsync("BTCUSDT", KlineInterval.OneMinute, data =>
+            return _socketClient.Spot.SubscribeToKlineUpdatesAsync(symbol, interval, data =>
             {
                 LastKline = data;
                 OnKlineData?.Invoke(data);
             });
         }
 
-        public async Task<WebCallResult<IEnumerable<IBinanceKline>>> GetKlinesAsync(string symbol)
+        public async Task<WebCallResult<IEnumerable<IBinanceKline>>> GetKlinesAsync(string symbol, KlineInterval timespan = KlineInterval.OneDay)
         {
-            Binance.Net.Enums.KlineInterval stimespan = Binance.Net.Enums.KlineInterval.OneMinute;
             DateTime? startTime = null;
             DateTime? endTime = null;
-            int? maxResults = 14;
-            return await _client.Spot.Market.GetKlinesAsync(symbol, stimespan, startTime, endTime, maxResults, System.Threading.CancellationToken.None);
+            int? maxResults = null;
+            return await _client.Spot.Market.GetKlinesAsync(symbol, timespan, startTime, endTime, maxResults, System.Threading.CancellationToken.None);
         }
 
         public async Task Unsubscribe(UpdateSubscription subscription)

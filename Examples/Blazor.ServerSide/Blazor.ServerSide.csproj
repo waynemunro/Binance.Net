@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Binance.Net" Version="6.4.0" />
+    <PackageReference Include="TALib.NETCore" Version="0.4.4" />
   </ItemGroup>
 
   <ItemGroup>
