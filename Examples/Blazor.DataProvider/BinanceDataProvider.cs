@@ -15,6 +15,9 @@ namespace Blazor.DataProvider
 
         public IBinanceStreamKlineData LastKline { get; private set; }
         public Action<IBinanceStreamKlineData> OnKlineData { get; set; }
+        public int? RSI_PERIOD { get; set; }
+        public DateTime? KLinesStartTime { get; set; }
+        public DateTime? KlinesEndTime { get; set; }
 
         public BinanceDataProvider(IBinanceClient client, IBinanceSocketClient socketClient)
         {
@@ -43,8 +46,8 @@ namespace Blazor.DataProvider
 
         public async Task<WebCallResult<IEnumerable<IBinanceKline>>> GetKlinesAsync(string symbol, KlineInterval timespan = KlineInterval.OneDay)
         {
-            DateTime? startTime = null;
-            DateTime? endTime = null;
+            DateTime? startTime = KLinesStartTime;
+            DateTime? endTime = KlinesEndTime;
             int? maxResults = null;
             return await _client.Spot.Market.GetKlinesAsync(symbol, timespan, startTime, endTime, maxResults, System.Threading.CancellationToken.None);
         }

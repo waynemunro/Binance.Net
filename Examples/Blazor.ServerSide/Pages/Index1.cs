@@ -63,40 +63,34 @@ namespace Blazor.ServerSide.Pages
         }
        
 
-        public decimal CalculateRsi(int rSI_PERIOD)
+        public decimal CalculateRsi()
         {
-            var closePrices = _Klines?.Where(x => x.CloseTime <= DateTime.UtcNow).OrderBy(o => o.CloseTime).Select(x => x.Close);
-
             decimal sumGain = 0;
             decimal sumLoss = 0;
-            decimal aveGain = 0;
-            decimal aveLoss = 0;
 
-            //var closePricesArr = closePrices.ToArray();
-            var lastPrice = closePrices.TakeLast(1).SingleOrDefault();
+            var lastPrice = _Klines.TakeLast(1).SingleOrDefault();
+            var closeCount = _Klines.Count();
+            var closePriceArr = _Klines.ToArray();
+            var counter1 = 0;
 
-            foreach (var price in closePrices)
+            foreach (var price in closePriceArr)
             {
-                var difference = price - lastPrice;
+                var difference = price.Close - lastPrice.Close;
 
-                if (difference >= 0)
+                if (difference >= lastPrice.Close)
                 {
                     sumGain += difference;
                 }
                 else
                 {
-                    sumLoss -= difference;
+                    sumLoss -= Math.Abs(difference);
                 }
+                counter1++;
             }
 
-            var closeCount = closePrices.Count();
+            if (sumGain == 0) return 0;
 
-            aveGain = 100.0M * (sumGain / closeCount);
-            aveLoss = 100.0M * (sumLoss / closeCount);
-
-            if (aveGain == 0) return 0;
-
-            var relativeStrength = aveLoss / aveGain;
+            var relativeStrength = Math.Abs(sumLoss) / sumGain;
 
             return 100.0M - (100.0M / (1 + relativeStrength));
         }
@@ -106,6 +100,11 @@ namespace Blazor.ServerSide.Pages
             RenderServerTime();
 
             message = "Received message";
+            _dataProvider.RSI_PERIOD = RSI_PERIOD;
+            _dataProvider.KLinesStartTime = DateTime.UtcNow.AddMinutes(-15);
+            _dataProvider.KlinesEndTime = DateTime.UtcNow.AddMinutes(-1);
+
+
 
             var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneMinute).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -113,27 +112,19 @@ namespace Blazor.ServerSide.Pages
             {
                 _Klines = callKLinesResult.Data;
 
-                if (callKLinesResult.Data.Count() >= RSI_PERIOD)
+                RSI = CalculateRsi();
+
+                if (inposition)
                 {
-                    RSI = CalculateRsi(RSI_PERIOD);
+                    // Overbought! Sell!
 
-                    if (inposition)
-                    {
-                        // Overbought! Sell!
-
-                        // put binance sell logic here
-
-
-                    }
-                    else
-                    {
-                        // It is overbought, but we don't own any. Nothing to do.
-                    }
+                    // put binance sell logic here
                 }
-
+                else
+                {
+                    // It is overbought, but we don't own any. Nothing to do.
+                }
             }
-
-
 
             var lines = _Klines.Count();
 
