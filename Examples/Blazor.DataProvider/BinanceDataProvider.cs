@@ -46,9 +46,9 @@ namespace Blazor.DataProvider
 
         public async Task<WebCallResult<IEnumerable<IBinanceKline>>> GetKlinesAsync(string symbol, KlineInterval timespan = KlineInterval.OneDay)
         {
-            DateTime? startTime = KLinesStartTime;
-            DateTime? endTime = KlinesEndTime;
-            int? maxResults = null;
+            DateTime? startTime = null;
+            DateTime? endTime = null;
+            int? maxResults = RSI_PERIOD;
             return await _client.Spot.Market.GetKlinesAsync(symbol, timespan, startTime, endTime, maxResults, System.Threading.CancellationToken.None);
         }
 

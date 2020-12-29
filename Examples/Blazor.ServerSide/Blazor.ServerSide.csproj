@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -6,8 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Binance.Net" Version="6.4.0" />
-    <PackageReference Include="TA-Lib" Version="0.5.0.3" />
-    <PackageReference Include="TALib.NETCore" Version="0.4.4" />
+
   </ItemGroup>
 
   <ItemGroup>

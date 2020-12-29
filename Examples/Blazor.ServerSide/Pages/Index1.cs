@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
+
 namespace Blazor.ServerSide.Pages
 {
 
@@ -23,7 +24,7 @@ namespace Blazor.ServerSide.Pages
         //private IEnumerable<IBinanceKline> _KlinesClosed = new List<IBinanceKline>();
         private IEnumerable<Tuple<string, IBinanceKline>> _KlineSymbol = new List<Tuple<string, IBinanceKline>>();
         //kcprivate string SOCKET = "wss://stream.binance.com:9443/ws/ethusdt@kline_1m";
-        private int RSI_PERIOD = 14;
+        private int RSI_PERIOD = 14;  // must be even number
         private int RSI_OVERBOUGHT = 70;
         private int RSI_OVERSOLD = 30;
         private string TRADE_SYMBOL = "BTCUSDT";
@@ -61,38 +62,105 @@ namespace Blazor.ServerSide.Pages
             LastKline = klineData;
             InvokeAsync(StateHasChanged);
         }
-       
+
+
+        public static decimal StdDev(IEnumerable<decimal> values)
+        {
+            // ref: http://warrenseen.com/blog/2006/03/13/how-to-calculate-standard-deviation/
+            double mean = 0.0;
+            double sum = 0.0;
+            double stdDev = 0.0;
+            int n = 0;
+            foreach (double val in values)
+            {
+                n++;
+                double delta = val - mean;
+                mean += delta / n;
+                sum += delta * (val - mean);
+            }
+            if (1 < n)
+                stdDev = Math.Sqrt(sum / (n - 1));
+
+            return (decimal)stdDev;
+        }
 
         public decimal CalculateRsi()
         {
             decimal sumGain = 0;
             decimal sumLoss = 0;
 
-            var lastPrice = _Klines.TakeLast(1).SingleOrDefault();
+            var lastPrice = _Klines.TakeLast(1).SingleOrDefault().Close;
             var closeCount = _Klines.Count();
-            var closePriceArr = _Klines.ToArray();
+            //var closePriceFloatArr = _Klines.Select(x => (float)x.Close).ToArray();
+            //var closePriceDoubleArr = _Klines.Select(x => (double)x.Close).ToArray();
             var counter1 = 0;
 
-            foreach (var price in closePriceArr)
-            {
-                var difference = price.Close - lastPrice.Close;
+            // average closing price in RSI_PERIOD
+            var averageClosingPrice = _Klines.Average(x => x.Close);
+            var averageClosingDifferance = _Klines.Average(x => Math.Abs(x.Close - lastPrice));
+            var sumClosingDifferance = _Klines.Sum(x => x.Close - lastPrice);
+            var orderedClosingDifferance = _Klines.OrderBy(x => x.Close - lastPrice);
+            var orderedClosing = _Klines.OrderBy(x => x.Close);
 
-                if (difference >= lastPrice.Close)
+            var minClosingPrice = orderedClosing.First();
+            var maxClosingPrice = orderedClosing.Last();
+
+            var median = orderedClosing.ElementAt(closeCount / 2).Close + orderedClosing.ElementAt((closeCount - 1) / 2).Close;
+            median /= 2;
+
+        //    var sumClosingScqures = _Klines.Sum(x => Math.Pow((double)x.Close, 2));
+
+            // calculate mean and standard deviation while processing one number at a time
+
+            var stddev = StdDev(_Klines.Select(x => x.Close));
+
+            var _KlinesArr = _Klines.ToArray();
+
+            var averageGain = 0.0M;
+            var averageLoss = 0.0M;
+
+            var previousAverageGain = 0.0M;
+            var previousaverageLoss = 0.0M;
+
+            foreach (var price in _KlinesArr)
+            {
+                var currentClose = _KlinesArr[counter1].Close;
+
+                if (counter1 == 0)
+                {
+                    counter1++;
+                    continue;
+                }
+
+                var previouseClose = _KlinesArr[counter1 - 1].Close;
+
+                var difference =  previouseClose - currentClose;
+
+                if (difference >= previouseClose)
                 {
                     sumGain += difference;
                 }
                 else
                 {
-                    sumLoss -= Math.Abs(difference);
+                    sumLoss -= difference;
                 }
+
                 counter1++;
             }
 
-            if (sumGain == 0) return 0;
+            // step 1
 
-            var relativeStrength = Math.Abs(sumLoss) / sumGain;
+            previousAverageGain = (sumGain / RSI_PERIOD) * 100;
+            previousaverageLoss = (sumLoss / RSI_PERIOD) * 100;
 
-            return 100.0M - (100.0M / (1 + relativeStrength));
+            //var standardDeviation = Math.Sqrt((sumClosingScqures / closeCount - (double)median) * (double)median);
+
+            if (averageLoss == 0) { return 0; }
+
+            var relativeStrength = averageGain / averageLoss;
+            var rsiToReturn = 100.0M - (100.0M / (1 + ((previousAverageGain / RSI_PERIOD)) + sumGain / -(previousaverageLoss / RSI_PERIOD) + sumLoss)); ;
+
+            return rsiToReturn;
         }
 
         private void HandleTickUpdates(IEnumerable<IBinanceTick> ticks)
@@ -104,9 +172,7 @@ namespace Blazor.ServerSide.Pages
             _dataProvider.KLinesStartTime = DateTime.UtcNow.AddMinutes(-15);
             _dataProvider.KlinesEndTime = DateTime.UtcNow.AddMinutes(-1);
 
-
-
-            var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneMinute).ConfigureAwait(false).GetAwaiter().GetResult();
+            var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneDay).ConfigureAwait(false).GetAwaiter().GetResult();
 
             if (callKLinesResult)
             {
