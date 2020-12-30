@@ -18,7 +18,7 @@ namespace Blazor.ServerSide.Pages
         private UpdateSubscription _subscription;
         private UpdateSubscription _subscriptionKline;
         private IEnumerable<IBinanceKline> _Klines = new List<IBinanceKline>();
-        //private IEnumerable<IBinanceKline> _KlinesClosed = new List<IBinanceKline>();
+
         private IEnumerable<Tuple<string, IBinanceKline>> _KlineSymbol = new List<Tuple<string, IBinanceKline>>();
         //kcprivate string SOCKET = "wss://stream.binance.com:9443/ws/ethusdt@kline_1m";
         private int RSI_PERIOD = 14;  // must be even number
@@ -143,7 +143,7 @@ namespace Blazor.ServerSide.Pages
                     if (counter1 > RSI_PERIOD)
                     {
                         sumGain += difference; // for the 2nd current period
-                        currentAverageUpwardMovements[counter1 - RSI_PERIOD - 1] = upwardMovements.Skip(counter1 - RSI_PERIOD).Take(RSI_PERIOD).Average();
+                        currentAverageUpwardMovements[counter1 - RSI_PERIOD - 1] = upwardMovements.Skip(counter1 - RSI_PERIOD -1).Take(RSI_PERIOD).Average();
 
                         //except for the first one, previous upward average  movement multiplied by the number of periods minus one, 
                         //plus the current upward movement,divided by the periods
@@ -155,7 +155,7 @@ namespace Blazor.ServerSide.Pages
                         }
                         else
                         {
-                            averageUpwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageUpwardMovements[counter1 - RSI_PERIOD];
+                            averageUpwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageUpwardMovements[counter1 - RSI_PERIOD -1];
                         }
                     }
                 }
@@ -165,7 +165,7 @@ namespace Blazor.ServerSide.Pages
 
                     downwardMovements[counter1 - 1] = difference; // populate the whole downward set
 
-                    if (counter1 >= RSI_PERIOD)
+                    if (counter1 > RSI_PERIOD)
                     {
                         sumLoss -= difference;  // for the 2nd current period
 
@@ -177,7 +177,7 @@ namespace Blazor.ServerSide.Pages
                             + downwardMovements[counter1 - 1]) / RSI_PERIOD;                        }
                         else
                         {
-                            averageDownwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageDownwardMovements[counter1 - RSI_PERIOD];
+                            averageDownwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageDownwardMovements[counter1 - RSI_PERIOD -1];
                         }
                     }                   
 
@@ -201,7 +201,7 @@ namespace Blazor.ServerSide.Pages
                 counter1++;
             }
 
-            var RSIsAverage = RSIs.Average();
+            var RSIsAverage = RSIs.Where(x => x > 0).Average();
 
             return RSIsAverage;
         }
@@ -221,7 +221,7 @@ namespace Blazor.ServerSide.Pages
             {
                 _Klines = callKLinesResult.Data;
 
-                RSI = (decimal)CalculateRsi();
+                RSI = CalculateRsi();
 
                 if (inposition)
                 {
