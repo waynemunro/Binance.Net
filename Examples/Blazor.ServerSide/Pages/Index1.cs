@@ -36,6 +36,8 @@ namespace Blazor.ServerSide.Pages
 
         Decimal RSI = 0;
 
+        Decimal Median = 0;
+
         int closeCount = 0;
         private IEnumerable<decimal> _closePrices;
 
@@ -212,6 +214,8 @@ namespace Blazor.ServerSide.Pages
                 _Klines = callKLinesResult.Data;
 
                 RSI = await Task.Run(() => CalculateRsi());
+
+                Median = await Task.Run(() => CalculateMedian());
 
                 if (inposition)
                 {
