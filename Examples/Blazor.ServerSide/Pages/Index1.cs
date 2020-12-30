@@ -80,27 +80,19 @@ namespace Blazor.ServerSide.Pages
             return (decimal)stdDev;
         }
 
+
+        public decimal CalculateMedian()
+        {
+            var orderedClosing = _Klines.OrderBy(x => x.Close);
+            var median = orderedClosing.ElementAt(closeCount / 2).Close + orderedClosing.ElementAt((closeCount - 1) / 2).Close;
+            return median /= 2;
+        }
         public decimal CalculateRsi()
         {
             decimal sumGain = 0;
             decimal sumLoss = 0;
 
-            //var lastPrice = _Klines.TakeLast(1).SingleOrDefault().Close;
-            var closeCount = _Klines.Count();
-            var closePriceDoubleArr = _Klines.Select(x => (double)x.Close).ToArray();
             var counter1 = 0;
-            var averageClosingPrice = _Klines.TakeLast(RSI_PERIOD).Average(x => x.Close);
-            //var averageClosingDifferance = _Klines.TakeLast(RSI_PERIOD).Average(x => Math.Abs(x.Close - lastPrice));
-
-            //var orderedClosingDifferance = _Klines.OrderBy(x => x.Close - lastPrice);
-            var orderedClosing = _Klines.OrderBy(x => x.Close);
-
-            var minClosingPrice = orderedClosing.First();
-            var maxClosingPrice = orderedClosing.Last();
-
-            var median = orderedClosing.ElementAt(closeCount / 2).Close + orderedClosing.ElementAt((closeCount - 1) / 2).Close;
-            median /= 2;
-
             var _KlinesArr = _Klines.ToArray();
 
             var upwardMovements = new decimal[RSI_PERIOD * 2];
@@ -118,7 +110,7 @@ namespace Blazor.ServerSide.Pages
             var relativeStrenths = new decimal[RSI_PERIOD];
             var RSIs = new decimal[RSI_PERIOD];
 
-            foreach (var price in _KlinesArr) // populate the movement sets
+            foreach (var price in _KlinesArr)
             {
                 var currentClose = _KlinesArr[counter1].Close;
 
@@ -136,17 +128,14 @@ namespace Blazor.ServerSide.Pages
                 {
                     difference = currentClose - previouseClose;
 
-                    upwardMovements[counter1 - 1] = difference; // populate the whole upword set   
+                    upwardMovements[counter1 - 1] = difference;   
 
                     previousAverageUpwardMovements[counter1 - 1] = upwardMovements.Skip(counter1 - 1).Take(RSI_PERIOD).Average();
 
                     if (counter1 > RSI_PERIOD)
                     {
-                        sumGain += difference; // for the 2nd current period
-                        currentAverageUpwardMovements[counter1 - RSI_PERIOD - 1] = upwardMovements.Skip(counter1 - RSI_PERIOD -1).Take(RSI_PERIOD).Average();
-
-                        //except for the first one, previous upward average  movement multiplied by the number of periods minus one, 
-                        //plus the current upward movement,divided by the periods
+                        sumGain += difference; 
+                        currentAverageUpwardMovements[counter1 - RSI_PERIOD - 1] = upwardMovements.Skip(counter1 - RSI_PERIOD - 1).Take(RSI_PERIOD).Average();
 
                         if (counter1 > RSI_PERIOD)
                         {
@@ -155,7 +144,7 @@ namespace Blazor.ServerSide.Pages
                         }
                         else
                         {
-                            averageUpwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageUpwardMovements[counter1 - RSI_PERIOD -1];
+                            averageUpwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageUpwardMovements[counter1 - RSI_PERIOD - 1];
                         }
                     }
                 }
@@ -163,23 +152,24 @@ namespace Blazor.ServerSide.Pages
                 {
                     difference = previouseClose - currentClose;
 
-                    downwardMovements[counter1 - 1] = difference; // populate the whole downward set
+                    downwardMovements[counter1 - 1] = difference; 
 
                     if (counter1 > RSI_PERIOD)
                     {
-                        sumLoss -= difference;  // for the 2nd current period
+                        sumLoss -= difference;
 
-                        currentAverageDownwardMovements[counter1 - RSI_PERIOD] = downwardMovements.Skip(counter1 - RSI_PERIOD -1).Take(RSI_PERIOD).Average();
+                        currentAverageDownwardMovements[counter1 - RSI_PERIOD] = downwardMovements.Skip(counter1 - RSI_PERIOD - 1).Take(RSI_PERIOD).Average();
 
                         if (counter1 > RSI_PERIOD)
                         {
                             averageDownwardMovements[counter1 - RSI_PERIOD] = (averageDownwardMovements[counter1 - RSI_PERIOD - 1] * RSI_PERIOD - 1
-                            + downwardMovements[counter1 - 1]) / RSI_PERIOD;                        }
+                            + downwardMovements[counter1 - 1]) / RSI_PERIOD;
+                        }
                         else
                         {
-                            averageDownwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageDownwardMovements[counter1 - RSI_PERIOD -1];
+                            averageDownwardMovements[counter1 - RSI_PERIOD - 1] = currentAverageDownwardMovements[counter1 - RSI_PERIOD - 1];
                         }
-                    }                   
+                    }
 
                     previouseAverageDownwardMovements[counter1 - 1] = downwardMovements.Skip(counter1 - 1).Take(RSI_PERIOD).Average();
                 }
@@ -189,7 +179,7 @@ namespace Blazor.ServerSide.Pages
                     var averageUpwardMovement = currentAverageUpwardMovements[counter1 - RSI_PERIOD - 1];
                     var averageDownwardMovement = currentAverageDownwardMovements[counter1 - RSI_PERIOD - 1];
 
-                    if (averageDownwardMovement > 0 )
+                    if (averageDownwardMovement > 0)
                     {
                         var relativeStrength = averageUpwardMovement / averageDownwardMovement;
                         relativeStrenths[counter1 - RSI_PERIOD - 1] = relativeStrength;
