@@ -215,7 +215,7 @@ namespace Blazor.ServerSide.Pages
             _dataProvider.KLinesStartTime = DateTime.UtcNow.AddMinutes(-15);
             _dataProvider.KlinesEndTime = DateTime.UtcNow.AddMinutes(-1);
 
-            var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneDay).ConfigureAwait(false).GetAwaiter().GetResult();
+            var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneHour).ConfigureAwait(false).GetAwaiter().GetResult();
 
             if (callKLinesResult)
             {
