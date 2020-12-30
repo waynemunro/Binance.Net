@@ -52,7 +52,7 @@
 
 <div>
     <h3>24h data</h3>
-    @foreach (var tick in _ticks)
+    @foreach (var tick in _ticks.Where(x => x.Symbol.StartsWith("BTC")).OrderByDescending(o => o.PriceChangePercent))
     {
         <div>@tick.Symbol | @tick.PriceChangePercent</div>
 

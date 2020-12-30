@@ -206,7 +206,7 @@ namespace Blazor.ServerSide.Pages
             return RSIsAverage;
         }
 
-        private void HandleTickUpdates(IEnumerable<IBinanceTick> ticks)
+        private async void HandleTickUpdates(IEnumerable<IBinanceTick> ticks)
         {
             RenderServerTime();
 
@@ -215,13 +215,13 @@ namespace Blazor.ServerSide.Pages
             _dataProvider.KLinesStartTime = DateTime.UtcNow.AddMinutes(-15);
             _dataProvider.KlinesEndTime = DateTime.UtcNow.AddMinutes(-1);
 
-            var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneHour).ConfigureAwait(false).GetAwaiter().GetResult();
+            var callKLinesResult = await _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneMinute).ConfigureAwait(false);
 
             if (callKLinesResult)
             {
                 _Klines = callKLinesResult.Data;
 
-                RSI = CalculateRsi();
+                RSI = await Task.Run(() => CalculateRsi());
 
                 if (inposition)
                 {
@@ -258,7 +258,7 @@ namespace Blazor.ServerSide.Pages
                 symbol.PriceChangePercent = tick.PriceChangePercent;
             }
 
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         }
 
         private void RenderServerTime()
