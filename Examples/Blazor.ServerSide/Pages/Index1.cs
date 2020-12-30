@@ -10,11 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-
 namespace Blazor.ServerSide.Pages
 {
-
-
     public partial class Index : ComponentBase
     {
         private IEnumerable<IBinanceTick> _ticks = new List<IBinanceTick>();
@@ -32,7 +29,6 @@ namespace Blazor.ServerSide.Pages
 
         IEnumerable<IBinanceKline> closes = default(IEnumerable<IBinanceKline>);
         bool inposition = false;
-
         string message = string.Empty;
         string message2 = string.Empty;
 
@@ -89,17 +85,14 @@ namespace Blazor.ServerSide.Pages
             decimal sumGain = 0;
             decimal sumLoss = 0;
 
-            var lastPrice = _Klines.TakeLast(1).SingleOrDefault().Close;
+            //var lastPrice = _Klines.TakeLast(1).SingleOrDefault().Close;
             var closeCount = _Klines.Count();
-            //var closePriceFloatArr = _Klines.Select(x => (float)x.Close).ToArray();
-            //var closePriceDoubleArr = _Klines.Select(x => (double)x.Close).ToArray();
+            var closePriceDoubleArr = _Klines.Select(x => (double)x.Close).ToArray();
             var counter1 = 0;
+            var averageClosingPrice = _Klines.TakeLast(RSI_PERIOD).Average(x => x.Close);
+            //var averageClosingDifferance = _Klines.TakeLast(RSI_PERIOD).Average(x => Math.Abs(x.Close - lastPrice));
 
-            // average closing price in RSI_PERIOD
-            var averageClosingPrice = _Klines.Average(x => x.Close);
-            var averageClosingDifferance = _Klines.Average(x => Math.Abs(x.Close - lastPrice));
-            var sumClosingDifferance = _Klines.Sum(x => x.Close - lastPrice);
-            var orderedClosingDifferance = _Klines.OrderBy(x => x.Close - lastPrice);
+            //var orderedClosingDifferance = _Klines.OrderBy(x => x.Close - lastPrice);
             var orderedClosing = _Klines.OrderBy(x => x.Close);
 
             var minClosingPrice = orderedClosing.First();
@@ -108,7 +101,7 @@ namespace Blazor.ServerSide.Pages
             var median = orderedClosing.ElementAt(closeCount / 2).Close + orderedClosing.ElementAt((closeCount - 1) / 2).Close;
             median /= 2;
 
-        //    var sumClosingScqures = _Klines.Sum(x => Math.Pow((double)x.Close, 2));
+            //    var sumClosingScqures = _Klines.Sum(x => Math.Pow((double)x.Close, 2));
 
             // calculate mean and standard deviation while processing one number at a time
 
@@ -116,13 +109,28 @@ namespace Blazor.ServerSide.Pages
 
             var _KlinesArr = _Klines.ToArray();
 
-            var averageGain = 0.0M;
-            var averageLoss = 0.0M;
+            //var averageGain = 0.0M;
+            //var averageLoss = 0.0M;
 
             var previousAverageGain = 0.0M;
             var previousaverageLoss = 0.0M;
 
-            foreach (var price in _KlinesArr)
+            var upwardMovements = new decimal[RSI_PERIOD * 2];
+            var downwardMovements = new decimal[RSI_PERIOD * 2];
+
+            var averageUpwardMovements = new decimal[RSI_PERIOD];
+            var averageDownwardMovements = new decimal[RSI_PERIOD];
+
+            var currentAverageUpwardMovements = new decimal[RSI_PERIOD];
+            var currentAverageDownwardMovements = new decimal[RSI_PERIOD];
+
+            var previousAverageUpwardMovements = new decimal[RSI_PERIOD * 2];
+            var previouseAverageDownwardMovements = new decimal[RSI_PERIOD * 2];
+
+            var relativeStrenths = new decimal[RSI_PERIOD];
+            var RSIs = new decimal[RSI_PERIOD];
+
+            foreach (var price in _KlinesArr) // populate the movement sets
             {
                 var currentClose = _KlinesArr[counter1].Close;
 
@@ -134,31 +142,90 @@ namespace Blazor.ServerSide.Pages
 
                 var previouseClose = _KlinesArr[counter1 - 1].Close;
 
-                var difference =  previouseClose - currentClose;
+                var difference = default(decimal);
 
-                if (difference >= previouseClose)
+                if (currentClose > previouseClose)
                 {
-                    sumGain += difference;
+                    difference = currentClose - previouseClose;
+
+                    upwardMovements[counter1 - 1] = difference; // populate the whole upword set   
+
+                    previousAverageUpwardMovements[counter1 - 1] = upwardMovements.Skip(counter1 - 1).Take(RSI_PERIOD).Average();
+
+                    if (counter1 >= RSI_PERIOD)
+                    {
+                        sumGain += difference; // for the 2nd current period
+                        currentAverageUpwardMovements[counter1 - RSI_PERIOD] = upwardMovements.Skip(counter1 - RSI_PERIOD).Take(RSI_PERIOD).Average();
+
+                        //except for the forst one, previous upward average  movement multiplied by the number of periods minus one, 
+                        //plus the current upward movement,divided by the periods
+
+                        if (counter1 > RSI_PERIOD)
+                        {
+                            averageUpwardMovements[counter1 - RSI_PERIOD] = (averageUpwardMovements[counter1 - RSI_PERIOD - 1] * RSI_PERIOD - 1 
+                                + upwardMovements[counter1 - 1]) / RSI_PERIOD;
+                        }
+                        else
+                        {
+                            averageUpwardMovements[counter1 - RSI_PERIOD] = currentAverageUpwardMovements[counter1 - RSI_PERIOD];
+                        }
+                    }
                 }
                 else
                 {
-                    sumLoss -= difference;
+                    difference = previouseClose - currentClose;
+
+                    downwardMovements[counter1 - 1] = difference; // populate the whole downward set
+
+                    if (counter1 >= RSI_PERIOD)
+                    {
+                        sumLoss -= difference;  // for the 2nd current period
+
+                        currentAverageDownwardMovements[counter1 - RSI_PERIOD] = downwardMovements.Skip(counter1 - RSI_PERIOD).Take(RSI_PERIOD).Average();
+
+                        if (counter1 > RSI_PERIOD)
+                        {
+                            averageDownwardMovements[counter1 - RSI_PERIOD] = (averageDownwardMovements[counter1 - RSI_PERIOD - 1] * RSI_PERIOD - 1
+                            + downwardMovements[counter1 - 1]) / RSI_PERIOD;
+                        }
+                        else
+                        {
+                            averageDownwardMovements[counter1 - RSI_PERIOD] = currentAverageDownwardMovements[counter1 - RSI_PERIOD];
+
+                        }
+
+                        //averageDownwardMovements[counter1 - RSI_PERIOD] = (previouseAverageDownwardMovements[counter1 - 2] * RSI_PERIOD - 1
+                        //    + downwardMovements[counter1 - 1]) / RSI_PERIOD;
+
+                    }
+                    //else
+                    //{
+                    previouseAverageDownwardMovements[counter1 - 1] = downwardMovements.Skip(counter1 - 1).Take(RSI_PERIOD).Average();
+                    //}
                 }
+
+                //averageDownwardMovements[counter1 - 1] = downwardMovements.Skip(counter1 - 1).Take(RSI_PERIOD).Average();
+
+                // TODO:  previous average multiplied by the number of periods minus one, plus the current upward movement,divided by the periods
+
+
+
+                // relativeStrenths[counter1 - 1] = averageUpwardMovements[counter1 - 1] - averageDownwardMovements[counter1 - 1];
 
                 counter1++;
             }
 
-            // step 1
+            var averageUpwardMovement = currentAverageUpwardMovements.Average();
+            var averageDownwardMovement = currentAverageDownwardMovements.Average();
+
+            var relativeStrength = averageUpwardMovement / averageDownwardMovement;
 
             previousAverageGain = (sumGain / RSI_PERIOD) * 100;
-            previousaverageLoss = (sumLoss / RSI_PERIOD) * 100;
+            previousaverageLoss = (Math.Abs(sumLoss) / RSI_PERIOD) * 100;
 
-            //var standardDeviation = Math.Sqrt((sumClosingScqures / closeCount - (double)median) * (double)median);
 
-            if (averageLoss == 0) { return 0; }
-
-            var relativeStrength = averageGain / averageLoss;
-            var rsiToReturn = 100.0M - (100.0M / (1 + ((previousAverageGain / RSI_PERIOD)) + sumGain / -(previousaverageLoss / RSI_PERIOD) + sumLoss)); ;
+            //var relativeStrength = averageGain / averageLoss;
+            var rsiToReturn = 100.0M - (100.0M / (1 + ((previousAverageGain / RSI_PERIOD)) + sumGain / -(previousaverageLoss / RSI_PERIOD) + Math.Abs(sumLoss))); ;
 
             return rsiToReturn;
         }

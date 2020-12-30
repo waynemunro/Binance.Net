@@ -48,7 +48,7 @@ namespace Blazor.DataProvider
         {
             DateTime? startTime = null;
             DateTime? endTime = null;
-            int? maxResults = RSI_PERIOD;
+            int? maxResults = RSI_PERIOD * 2; // for the previouse average movements 
             return await _client.Spot.Market.GetKlinesAsync(symbol, timespan, startTime, endTime, maxResults, System.Threading.CancellationToken.None);
         }
 
