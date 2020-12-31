@@ -31,11 +31,14 @@ namespace Blazor.ServerSide
             var credentialAPIKey = Configuration.GetValue<string>("BinanceAPI:K");
             var credentialSecretKey = Configuration.GetValue<string>("BinanceAPI:S");
 
-            BinanceClient.SetDefaultOptions(new BinanceClientOptions()
+            if (credentialSecretKey != string.Empty)
             {
-                LogVerbosity = LogVerbosity.Debug,
-                ApiCredentials = new ApiCredentials(credentialAPIKey, credentialSecretKey)
-            });
+                BinanceClient.SetDefaultOptions(new BinanceClientOptions()
+                {
+                    LogVerbosity = LogVerbosity.Debug,
+                    ApiCredentials = new ApiCredentials(credentialAPIKey, credentialSecretKey)
+                });
+            }
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
