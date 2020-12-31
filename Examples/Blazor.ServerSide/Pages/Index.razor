@@ -14,7 +14,7 @@
 
 
     <EditForm Model="KlineInterval">
-        <InputSelect @bind-Value="KlineInterval"  >
+        <InputSelect @bind-Value="KlineInterval" @oninput="@OnUpdated">
             @foreach (var value in Enum.GetValues(typeof(Binance.Net.Enums.KlineInterval)))
             {
                 <option>@value</option>
