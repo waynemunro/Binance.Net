@@ -10,6 +10,20 @@
 
 <div>
     Server time : @ServerTime
+
+
+
+    <EditForm Model="KlineInterval">
+        <InputSelect @bind-Value="KlineInterval"  >
+            @foreach (var value in Enum.GetValues(typeof(Binance.Net.Enums.KlineInterval)))
+            {
+                <option>@value</option>
+            }
+        </InputSelect>
+    </EditForm>
+
+    <span>Selected value: @KlineInterval</span>
+
     <h4>K Line data @TRADE_SYMBOL</h4>
     @foreach (var line in _Klines.TakeLast(2))
     {
@@ -21,34 +35,17 @@
         <div>Closing Price : @line.Close</div>
         <div>Trades : @line.TradeCount</div>
         <div>TakerBuyBaseVolume : @line.TakerBuyBaseVolume</div>
-        <div>Quote Volume : @line.QuoteVolume</div>
+        @*<div>Quote Volume : @line.QuoteVolume</div>*@
         <div>CloseTime : @line.CloseTime</div>
         <hr />
     }
 
     <div>Message : @message</div>
-
-
     <div>RSI : @RSI</div>
     <div>Median : @Median</div>
 </div>
 
-@*<div>
-        <h4>Last K Line data @TRADE_SYMBOL</h4>
 
-            <div>OpenTime : @LastKline.Data.OpenTime</div>
-            <div>Base Volume : @LastKline.Data.BaseVolume</div>
-            <div>Opening Price : @LastKline.Data.Open</div>
-            <div>Highest Price : @LastKline.Data.High</div>
-            <div>Lowest Price : @LastKline.Data.Low</div>
-            <div>Closing Price : @LastKline.Data.Close</div>
-            <div>Trades : @LastKline.Data.TradeCount</div>
-            <div>TakerBuyBaseVolume : @LastKline.Data.TakerBuyBaseVolume</div>
-            <div>Quote Volume : @LastKline.Data.QuoteVolume</div>
-            <div>CloseTime : @LastKline.Data.CloseTime</div>
-
-            <hr />
-    </div>*@
 
 
 <div>
@@ -61,121 +58,7 @@
 </div>
 
 @code
-{
-    //private IEnumerable<IBinanceTick> _ticks = new List<IBinanceTick>();
-    //private UpdateSubscription _subscription;
+{  
 
-    //private IEnumerable<IBinanceKline> _Klines = new List<IBinanceKline>();
-
-    //private IEnumerable<IBinanceKline> _KlinesClosed = new List<IBinanceKline>();
-
-    //private IEnumerable<Tuple<string, IBinanceKline>> _KlineSymbol = new List<Tuple<string, IBinanceKline>>();
-
-
-    //private string SOCKET = "wss://stream.binance.com:9443/ws/ethusdt@kline_1m";
-
-    //private int RSI_PERIOD = 14;
-    //private int RSI_OVERBOUGHT = 70;
-    //private int RSI_OVERSOLD = 30;
-    //private string TRADE_SYMBOL = "BTCUSDT";
-    //private double TRADE_QUANTITY = 0.05;
-
-    //IEnumerable<IBinanceKline> closes = default(IEnumerable<IBinanceKline>);
-    //bool inposition = false;
-
-    //string message = string.Empty;
-    //string message2 = string.Empty;
-
-    //int closeCount = 0;
-
-
-    //protected override async Task OnInitializedAsync()
-    //{
-    //    var callResult = await _dataProvider.Get24HPrices().ConfigureAwait(false);
-    //    if (callResult)
-    //        _ticks = callResult.Data;
-
-    //    var subResult = await _dataProvider.SubscribeTickerUpdates(HandleTickUpdates).ConfigureAwait(false);
-    //    if (subResult)
-    //        _subscription = subResult.Data;
-
-
-    //    //var callKLinesResult = await _dataProvider.GetKlinesAsync(TRADE_SYMBOL).ConfigureAwait(false);
-    //    //if (callKLinesResult)
-    //    //    _Klines = callKLinesResult.Data;
-
-
-
-    //    //var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL).ConfigureAwait(false).GetAwaiter().GetResult();
-    //    //if (callKLinesResult)
-    //    //    _Klines = callKLinesResult.Data;
-    //}
-
-    //private void HandleTickUpdates(IEnumerable<IBinanceTick> ticks)
-    //{
-
-    //    message = "Received message";
-
-    //    var callKLinesResult = _dataProvider.GetKlinesAsync(TRADE_SYMBOL).ConfigureAwait(false).GetAwaiter().GetResult();
-
-    //    if (callKLinesResult)
-    //    {
-    //        _Klines = callKLinesResult.Data;
-
-    //        foreach (var item in _Klines)
-    //        {
-    //            if(item.CloseTime > DateTime.UtcNow)
-    //            {
-    //                _KlinesClosed.Prepend(item);
-
-    //                closeCount++;
-    //            }
-    //        }
-    //    }
-
-    //    var is_candle_closed = _Klines.Last().CloseTime >= DateTime.UtcNow;
-
-    //    if (is_candle_closed)
-    //    {
-    //        var _klinesClosedCount = _KlinesClosed.Count();
-
-    //        var _KlinesArr = _Klines.ToArray();
-
-    //        message = $"Candle closed at {_KlinesArr[closeCount].CloseTime }";
-
-    //        _KlinesClosed.Append(_Klines.First());
-    //    }
-
-    //    var lines = _KlinesClosed.Count();
-
-    //    if (closeCount > RSI_PERIOD)
-    //    {
-    //        message2 = $"RSI_PERIOD Reached {lines}";
-
-    //    }
-    //    else
-    //    {
-    //        message2 = $"RSI_PERIOD {lines}";
-
-    //    }
-
-
-
-    //    foreach (var tick in ticks)
-    //    {
-    //        //var callKLinesResult1 = _dataProvider.GetKlinesAsync(TRADE_SYMBOL).ConfigureAwait(false).GetAwaiter().GetResult();
-    //        //if (callKLinesResult1)
-    //        //    _KlineSymbol = callKLinesResult1.Data.Select(x => new Tuple<string, IBinanceKline>(tick.Symbol,x));
-
-    //        var symbol = _ticks.Single(t => t.Symbol == tick.Symbol);
-    //        symbol.PriceChangePercent = tick.PriceChangePercent;
-    //    }
-
-    //    InvokeAsync(StateHasChanged);
-    //}
-
-    //public async ValueTask DisposeAsync()
-    //{
-    //    await _dataProvider.Unsubscribe(_subscription);
-    //}
+    
 }

@@ -11,9 +11,10 @@ using System.Threading.Tasks;
 
 
 namespace Blazor.ServerSide.Pages
-{
+{   
     public partial class Index : ComponentBase
     {
+        public KlineInterval KlineInterval { get; set; } = KlineInterval.OneMinute;
         private IEnumerable<IBinanceTick> _ticks = new List<IBinanceTick>();
         private UpdateSubscription _subscription;
         private UpdateSubscription _subscriptionKline;
@@ -45,6 +46,11 @@ namespace Blazor.ServerSide.Pages
 
         protected override async Task OnInitializedAsync()
         {
+            await InitializeData().ConfigureAwait(false);
+        }
+
+        private async Task InitializeData()
+        {
             var callResult = await _dataProvider.Get24HPrices().ConfigureAwait(false);
             if (callResult)
                 _ticks = callResult.Data;
@@ -52,7 +58,12 @@ namespace Blazor.ServerSide.Pages
             var subResult = await _dataProvider.SubscribeTickerUpdates(HandleTickUpdates).ConfigureAwait(false);
             if (subResult)
                 _subscription = subResult.Data;
+        }
 
+        public void OnUpdated(ChangeEventArgs e)
+        {
+            InitializeData().GetAwaiter().GetResult();
+            var selected = e.Value;
         }
 
         private void HandleKLineUpdates(IBinanceStreamKlineData klineData)
@@ -207,7 +218,7 @@ namespace Blazor.ServerSide.Pages
             _dataProvider.KLinesStartTime = DateTime.UtcNow.AddMinutes(-15);
             _dataProvider.KlinesEndTime = DateTime.UtcNow.AddMinutes(-1);
 
-            var callKLinesResult = await _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval.OneMinute).ConfigureAwait(false);
+            var callKLinesResult = await _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval).ConfigureAwait(false);
 
             if (callKLinesResult)
             {
@@ -225,7 +236,7 @@ namespace Blazor.ServerSide.Pages
                 }
                 else
                 {
-                    // It is overbought, but we don't own any. Nothing to do.
+                    message = "It is overbought, but we don't own any. Nothing to do.";
                 }
             }
 
