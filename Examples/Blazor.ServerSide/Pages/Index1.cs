@@ -28,7 +28,6 @@ namespace Blazor.ServerSide.Pages
         private string TRADE_SYMBOL = "BTCUSDT";
         private double TRADE_QUANTITY = 0.05;
 
-        IEnumerable<IBinanceKline> closes = default(IEnumerable<IBinanceKline>);
         bool inposition = false;
         string message = string.Empty;
         string message2 = string.Empty;
@@ -36,10 +35,10 @@ namespace Blazor.ServerSide.Pages
         DateTime ServerTime = default(DateTime);
 
         Decimal RSI = 0;
-
         Decimal Median = 0;
+        Decimal StdDev = 0;
+        Decimal Movement24Hrs = 0;
 
-        int closeCount = 0;
         private IEnumerable<decimal> _closePrices;
         private bool PricesInit;
 
@@ -79,8 +78,12 @@ namespace Blazor.ServerSide.Pages
            // InvokeAsync(StateHasChanged);
         }
 
-
-        public static decimal StdDev(IEnumerable<decimal> values)
+        /// <summary>
+        /// Calulate the Standard Deviation
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public decimal CalulateStdDev(IEnumerable<decimal> values)
         {
             // ref: http://warrenseen.com/blog/2006/03/13/how-to-calculate-standard-deviation/
             double mean = 0.0;
@@ -97,20 +100,22 @@ namespace Blazor.ServerSide.Pages
             if (1 < n)
                 stdDev = Math.Sqrt(sum / (n - 1));
 
+            StdDev = (decimal)stdDev;
+
             return (decimal)stdDev;
         }
 
 
         public decimal CalculateMedian()
         {
-            var orderedClosing = _Klines.OrderBy(x => x.Close);
+            var orderedClosing = _Klines.Where(x => x.CloseTime < DateTime.UtcNow).TakeLast(RSI_PERIOD).OrderBy(x => x.Close);
+            int closeCount = orderedClosing.Count();
             var median = orderedClosing.ElementAt(closeCount / 2).Close + orderedClosing.ElementAt((closeCount - 1) / 2).Close;
-            return median /= 2;
+            Median = median /= 2;
+            return Median;
         }
         public async Task<decimal> CalculateRsiAsync()
         {
-            //await InitializeData().ConfigureAwait(false);
-
             decimal sumGain = 0;
             decimal sumLoss = 0;
 
@@ -131,8 +136,6 @@ namespace Blazor.ServerSide.Pages
 
             var relativeStrenths = new decimal[RSI_PERIOD];
             var RSIs = new decimal[RSI_PERIOD];
-
-
 
             foreach (var price in _KlinesArr)
             {
@@ -228,8 +231,6 @@ namespace Blazor.ServerSide.Pages
 
             message = "Received message";
             _dataProvider.RSI_PERIOD = RSI_PERIOD;
-            _dataProvider.KLinesStartTime = DateTime.UtcNow.AddMinutes(-15);
-            _dataProvider.KlinesEndTime = DateTime.UtcNow.AddMinutes(-1);
 
             var callKLinesResult = await _dataProvider.GetKlinesAsync(TRADE_SYMBOL, KlineInterval).ConfigureAwait(false);
 
@@ -241,49 +242,46 @@ namespace Blazor.ServerSide.Pages
 
                 Median = await Task.Run(() => CalculateMedian());
 
-                if (inposition)
-                {
-                    // Overbought! Sell!
+                StdDev = await Task.Run(() => CalulateStdDev(_Klines.TakeLast(RSI_PERIOD).Select(x => x.Close)));
 
-                    // put binance sell logic here
+                if (RSI >= RSI_OVERBOUGHT)
+                {
+                    message = "It is overbought, Sell!";
+
+                    // TODO: put binance sell logic here
+                }
+                else if (RSI <= RSI_OVERSOLD)
+                {
+                    message = "It is oversold, Buy!";
                 }
                 else
                 {
-                    message = "It is overbought, but we don't own any. Nothing to do.";
+                    message = "Normal";
                 }
             }
 
             var lines = _Klines.Count();
 
-            if (closeCount > RSI_PERIOD)
-            {
-                message2 = $"RSI_PERIOD Reached {lines}";
-
-            }
-            else
-            {
-                message2 = $"RSI_PERIOD {lines}";
-
-            }
-
             foreach (var tick in ticks)
             {
-                //var callKLinesResult1 = _dataProvider.GetKlinesAsync(TRADE_SYMBOL).ConfigureAwait(false).GetAwaiter().GetResult();
-                //if (callKLinesResult1)
-                //    _KlineSymbol = callKLinesResult1.Data.Select(x => new Tuple<string, IBinanceKline>(tick.Symbol,x));
-
                 var symbol = _ticks.Single(t => t.Symbol == tick.Symbol);
                 symbol.PriceChangePercent = tick.PriceChangePercent;
+
+                if(tick.Symbol == TRADE_SYMBOL)
+                {
+                    Movement24Hrs = symbol.PriceChangePercent;
+                }
             }
 
             await InvokeAsync(StateHasChanged);
         }
 
+
         private void RenderServerTime()
         {
             using (var client = new BinanceClient())
             {
-                var result = client.Spot.System.GetServerTime();
+                var result = Task.Run(() =>  client.Spot.System.GetServerTime()).ConfigureAwait(false).GetAwaiter().GetResult();
                 if (result.Success)
                 {
                     ServerTime = result.Data;
@@ -292,7 +290,6 @@ namespace Blazor.ServerSide.Pages
                 else
                     Console.WriteLine($"Error: {result.Error}");
             }
-
         }
 
         public async ValueTask DisposeAsync()
@@ -300,5 +297,4 @@ namespace Blazor.ServerSide.Pages
             await _dataProvider.Unsubscribe(_subscription);
         }
     }
-
 }
