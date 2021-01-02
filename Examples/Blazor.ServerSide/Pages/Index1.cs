@@ -86,23 +86,25 @@ namespace Blazor.ServerSide.Pages
         public decimal CalulateStdDev(IEnumerable<decimal> values)
         {
             // ref: http://warrenseen.com/blog/2006/03/13/how-to-calculate-standard-deviation/
-            double mean = 0.0;
-            double sum = 0.0;
-            double stdDev = 0.0;
+            decimal mean = 0.0M;
+            decimal sum = 0.0M;
+            decimal stdDev = 0.0M;
             int n = 0;
-            foreach (double val in values)
+
+            foreach (var val in values)
             {
                 n++;
-                double delta = val - mean;
+                var delta = val - mean;
                 mean += delta / n;
                 sum += delta * (val - mean);
             }
+
             if (1 < n)
-                stdDev = Math.Sqrt(sum / (n - 1));
+                stdDev = (decimal)Math.Sqrt((double)(sum / (n - 1)));
 
-            StdDev = (decimal)stdDev;
+            StdDev = stdDev;
 
-            return (decimal)stdDev;
+            return stdDev;
         }
 
 
@@ -227,7 +229,27 @@ namespace Blazor.ServerSide.Pages
 
         private async void HandleTickUpdates(IEnumerable<IBinanceTick> ticks)
         {
-            RenderServerTime();
+            await GetTradeStatsForPeriod().ConfigureAwait(false);
+
+            //var lines = _Klines.Count();
+
+            foreach (var tick in ticks)
+            {
+                var symbol = _ticks.Single(t => t.Symbol == tick.Symbol);
+                symbol.PriceChangePercent = tick.PriceChangePercent;
+
+                if (tick.Symbol == TRADE_SYMBOL)
+                {
+                    Movement24Hrs = symbol.PriceChangePercent;
+                }
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+
+        private async Task GetTradeStatsForPeriod()
+        {
+            await Task.Run(() => RenderServerTime());
 
             message = "Received message";
             _dataProvider.RSI_PERIOD = RSI_PERIOD;
@@ -259,23 +281,7 @@ namespace Blazor.ServerSide.Pages
                     message = "Normal";
                 }
             }
-
-            var lines = _Klines.Count();
-
-            foreach (var tick in ticks)
-            {
-                var symbol = _ticks.Single(t => t.Symbol == tick.Symbol);
-                symbol.PriceChangePercent = tick.PriceChangePercent;
-
-                if(tick.Symbol == TRADE_SYMBOL)
-                {
-                    Movement24Hrs = symbol.PriceChangePercent;
-                }
-            }
-
-            await InvokeAsync(StateHasChanged);
         }
-
 
         private void RenderServerTime()
         {
