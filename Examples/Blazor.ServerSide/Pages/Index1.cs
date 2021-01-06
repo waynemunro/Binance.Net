@@ -1,6 +1,7 @@
 ﻿using Binance.Net;
 using Binance.Net.Enums;
 using Binance.Net.Interfaces;
+using Binance.Net.Objects.Spot.MarketStream;
 using CryptoExchange.Net.Sockets;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -17,7 +18,7 @@ namespace Blazor.ServerSide.Pages
         public KlineInterval KlineInterval { get; set; } = KlineInterval.OneHour;
         private IEnumerable<IBinanceTick> _ticks = new List<IBinanceTick>();
         private UpdateSubscription _subscription;
-        private UpdateSubscription _subscriptionKline;
+        private UpdateSubscription _subscriptionToBookTickerUpdates;
         private IEnumerable<IBinanceKline> _Klines = new List<IBinanceKline>();
 
         private IEnumerable<Tuple<string, IBinanceKline>> _KlineSymbol = new List<Tuple<string, IBinanceKline>>();
@@ -42,6 +43,7 @@ namespace Blazor.ServerSide.Pages
         private IEnumerable<decimal> _closePrices;
         private bool PricesInit;
 
+        private BinanceStreamBookPrice BookPrice = new BinanceStreamBookPrice();
         public IBinanceStreamKlineData LastKline { get; private set; }
 
         protected override async Task OnInitializedAsync()
@@ -64,6 +66,18 @@ namespace Blazor.ServerSide.Pages
             var subResult = await _dataProvider.SubscribeTickerUpdates(HandleTickUpdates).ConfigureAwait(false);
             if (subResult)
                 _subscription = subResult.Data;
+
+            // SubscribeToBookTickerUpdatesAsync  _subscriptionToBookTickerUpdates
+
+            var subscribeToBookTickerUpdatesResult = await _dataProvider.SubscribeToBookTickerUpdatesAsync(TRADE_SYMBOL,HandleBookTickerUpdates);
+            if (subscribeToBookTickerUpdatesResult)
+                _subscriptionToBookTickerUpdates = subscribeToBookTickerUpdatesResult.Data;
+
+        }
+
+        private void HandleBookTickerUpdates(BinanceStreamBookPrice data)
+        {
+            BookPrice = data;
         }
 
         public void OnUpdated(ChangeEventArgs e)

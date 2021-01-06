@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Binance.Net.Enums;
 using Binance.Net.Interfaces;
+using Binance.Net.Objects.Spot.MarketStream;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
 
@@ -33,6 +34,11 @@ namespace Blazor.DataProvider
         public Task<CallResult<UpdateSubscription>> SubscribeTickerUpdates(Action<IEnumerable<IBinanceTick>> tickHandler)
         {
             return _socketClient.Spot.SubscribeToAllSymbolTickerUpdatesAsync(tickHandler);
+        }
+
+        public async Task<CallResult<UpdateSubscription>> SubscribeToBookTickerUpdatesAsync(string symbol, Action<BinanceStreamBookPrice> onMessage)
+        {
+            return await _socketClient.Spot.SubscribeToBookTickerUpdatesAsync(symbol, onMessage).ConfigureAwait(false);
         }
 
         public Task<CallResult<UpdateSubscription>> SubscribeToKlineUpdatesAsync(Action<IBinanceStreamKlineData> klineHandler, string symbol = "BTCUSDT", KlineInterval interval = KlineInterval.OneDay)

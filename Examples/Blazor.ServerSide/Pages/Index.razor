@@ -49,7 +49,15 @@
 </div>
 
 <hr />
+<div>
 
+    <h3>Book Price</h3>
+    <div>Best Bid Price : @BookPrice.BestBidPrice</div>
+    <div>Best Bid Quantity : @BookPrice.BestBidQuantity</div>
+    <div>Best Ask Price : @BookPrice.BestAskPrice</div>
+    <div>Best Ask Quantity : @BookPrice.BestAskQuantity</div>
+</div>
+<hr />
 <div>
     <h3>24h data</h3>
     @foreach (var tick in _ticks.Where(x => x.Symbol.StartsWith("BTC")).OrderByDescending(o => o.PriceChangePercent))
@@ -58,6 +66,10 @@
 
     }
 </div>
+
+
+
+
 
 @code
 {
