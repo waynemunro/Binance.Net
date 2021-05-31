@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Binance.Net.Enums;
@@ -31,7 +32,7 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         IBinanceClientUserStream UserStream { get; }
 
         /// <summary>
-        /// Isolated Margin endpoints
+        /// Isolated margin user stream endpoints
         /// </summary>
         IBinanceClientIsolatedMarginUserStream IsolatedUserStream { get; }
 
@@ -140,8 +141,8 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         /// <param name="endTime">Time to stop getting records to</param>
         /// <param name="current">Number of page records</param>
         /// <param name="isolatedSymbol">Filter by isolated symbol</param>
-        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="limit">The records count size need show</param>
+        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Loan records</returns>
@@ -155,9 +156,9 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         /// <param name="startTime">Time to start getting records from</param>
         /// <param name="endTime">Time to stop getting records to</param>
         /// <param name="current">Number of page records</param>
-        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="isolatedSymbol">Filter by isolated symbol</param>
         /// <param name="limit">The records count size need show</param>
+        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Loan records</returns>
@@ -171,9 +172,9 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         /// <param name="startTime">Time to start getting records from</param>
         /// <param name="endTime">Time to stop getting records to</param>
         /// <param name="current">Number of page records</param>
-        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="isolatedSymbol">Filter by isolated symbol</param>
         /// <param name="size">The records count size need show</param>
+        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Repay records</returns>
@@ -187,9 +188,9 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         /// <param name="startTime">Time to start getting records from</param>
         /// <param name="endTime">Time to stop getting records to</param>
         /// <param name="current">Filter by number</param>
-        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="isolatedSymbol">Filter by isolated symbol</param>
         /// <param name="size">The records count size need show</param>
+        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Repay records</returns>
@@ -203,8 +204,8 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         /// <param name="startTime">Filter by startTime from</param>
         /// <param name="endTime">Filter by endTime from</param>
         /// <param name="isolatedSymbol">Filter by isolated symbol</param>
-        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="limit">Limit of the amount of results</param>
+        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>List of interest events</returns>
@@ -218,12 +219,38 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         /// <param name="startTime">Filter by startTime from</param>
         /// <param name="endTime">Filter by endTime from</param>
         /// <param name="isolatedSymbol">Filter by isolated symbol</param>
-        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="limit">Limit of the amount of results</param>
+        /// <param name="archived">Set to true for archived data from 6 months ago</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>List of interest events</returns>
         Task<WebCallResult<BinanceQueryRecords<BinanceInterestHistory>>> GetInterestHistoryAsync(string? asset = null, int? page = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, string? isolatedSymbol = null, bool? archived = null, long? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Get history of interest rate
+        /// </summary>
+        /// <param name="asset">Filter by asset</param>
+        /// <param name="vipLevel">Vip level</param>
+        /// <param name="startTime">Filter by startTime from</param>
+        /// <param name="endTime">Filter by endTime from</param>
+        /// <param name="limit">Limit of the amount of results</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>List of interest rate</returns>
+        WebCallResult<IEnumerable<BinanceInterestRateHistory>> GetInterestRateHistory(string asset, string? vipLevel = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, long? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Get history of interest rate
+        /// </summary>
+        /// <param name="asset">Filter by asset</param>
+        /// <param name="vipLevel">Vip level</param>
+        /// <param name="startTime">Filter by startTime from</param>
+        /// <param name="endTime">Filter by endTime from</param>
+        /// <param name="limit">Limit of the amount of results</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>List of interest rate</returns>
+        Task<WebCallResult<IEnumerable<BinanceInterestRateHistory>>> GetInterestRateHistoryAsync(string asset, string? vipLevel = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, long? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
         /// Get history of forced liquidations
@@ -346,7 +373,6 @@ namespace Binance.Net.Interfaces.SubClients.Margin
         /// <returns></returns>
         Task<WebCallResult<BinanceIsolatedMarginAccount>> GetIsolatedMarginAccountAsync(
             int? receiveWindow = null, CancellationToken ct = default);
-
 
         /// <summary>
         /// Transfer from or to isolated margin account

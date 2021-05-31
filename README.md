@@ -49,11 +49,7 @@ Implementations from third parties:
 <br />
 <a href="https://github.com/ridicoulous/LiquidQuoine.Net">Liquid</a>
 </td>
-<td><a href="https://github.com/burakoner/OKEx.Net"><img src="https://raw.githubusercontent.com/burakoner/OKEx.Net/master/Okex.Net/Icon/icon.png"></a>
-<br />
-<a href="https://github.com/burakoner/OKEx.Net">OKEx</a>
-</td>
-	<td><a href="https://github.com/ridicoulous/Bitmex.Net"><img src="https://github.com/ridicoulous/Bitmex.Net/blob/master/Bitmex.Net/Icon/icon.png"></a>
+<td><a href="https://github.com/ridicoulous/Bitmex.Net"><img src="https://github.com/ridicoulous/Bitmex.Net/blob/master/Bitmex.Net/Icon/icon.png"></a>
 <br />
 <a href="https://github.com/ridicoulous/Bitmex.Net">Bitmex</a>
 </td>
@@ -65,6 +61,26 @@ Implementations from third parties:
 <br />
 <a href="https://github.com/EricGarnier/LiveCoin.Net">LiveCoin</a>
 </td>
+<td><a href="https://github.com/burakoner/OKEx.Net"><img src="https://github.com/burakoner/OKEx.Net/blob/master/Okex.Net/Icon/icon.png?raw=true"></a>
+<br />
+<a href="https://github.com/burakoner/OKEx.Net">OKEx</a>
+</td>
+<td><a href="https://github.com/burakoner/Chiliz.Net"><img src="https://github.com/burakoner/Chiliz.Net/blob/master/Chiliz.Net/Icon/icon.png?raw=true"></a>
+<br />
+<a href="https://github.com/burakoner/Chiliz.Net">Chiliz</a>
+</td>
+<td><a href="https://github.com/burakoner/BtcTurk.Net"><img src="https://github.com/burakoner/BtcTurk.Net/blob/master/BtcTurk.Net/Icon/icon.png?raw=true"></a>
+<br />
+<a href="https://github.com/burakoner/BtcTurk.Net">BtcTurk</a>
+</td>
+<td><a href="https://github.com/burakoner/Thodex.Net"><img src="https://github.com/burakoner/Thodex.Net/blob/master/Thodex.Net/Icon/icon.png?raw=true"></a>
+<br />
+<a href="https://github.com/burakoner/Thodex.Net">Thodex</a>
+</td>
+<td><a href="https://github.com/d-ugarov/Exante.Net"><img src="https://github.com/d-ugarov/Exante.Net/blob/master/Exante.Net/Icon/icon.png?raw=true"></a>
+<br />
+<a href="https://github.com/d-ugarov/Exante.Net">Exante</a>
+</td>
 </tr>
 </table>
 
@@ -74,6 +90,9 @@ I develop and maintain this package on my own for free in my spare time. Donatio
 **Btc**:  12KwZk3r2Y3JZ2uMULcjqqBvXmpDwjhhQS  
 **Eth**:  0x069176ca1a4b1d6e0b7901a6bc0dbf3bb0bf5cc2  
 **Nano**: xrb_1ocs3hbp561ef76eoctjwg85w5ugr8wgimkj8mfhoyqbx4s1pbc74zggw7gs  
+
+## Discord
+A Discord server is available [here](https://discord.gg/MSpeEtSY8t). For discussion and/or questions around the CryptoExchange.Net and implementation libraries, feel free to join.
 
 
 ## Installation
@@ -133,9 +152,7 @@ if(!startResult.Success)
 
 var socketClient = new BinanceSocketClient();
 
-socketClient.Spot.SubscribeToUserStream(startResult.Data, 
-	accountUpdate => { // Handle account info update 
-	},
+socketClient.Spot.SubscribeToUserDataUpdates(startResult.Data, 
 	orderUpdate => { // Handle order update
 	}, 
 	ocoUpdate => { // Handle oco order update
@@ -153,6 +170,96 @@ When no longer listening to private endpoints the `StopUserStream` method in `Bi
 
 
 ## Release notes
+* Version 6.13.3 - 28 apr 2021
+    * Fixed some issues in the IExchangeClient interface
+    * Updated ExchangeClient.Net
+    * Fixed QueryOCO order id parameter
+
+* Version 6.13.2 - 19 apr 2021
+    * Updated CryptoExchange.Net
+
+* Version 6.13.1 - 02 apr 2021
+    * Fixed mining endpoints
+    * Adjusted TransferSubAccountToSubAccount request
+    * Removed invalid symbol check Usdt futures GetKlines
+
+* Version 6.13.0 - 30 mrt 2021
+    * Added CancelOpenMarginOrders endpoint
+    * Added universal Transfer endpoints
+    * Added new mining endpoints
+    * Updated futures/loan endpoints to V2
+    * Added new subAccount endpoints
+    * Added margin GetInterestRateHistory endpoint
+    * Updated multiple models
+    * Fixed trade rules not applied to Oco orders
+    * Fixed mining endpoints not signed
+    * Fixed quoteQuantity parameter serialization on GetQuote liquid swap endpoint
+    * Fixed GetAssetDetails throwing exception
+
+* Version 6.12.0 - 10 mrt 2021
+    * Fixed multiple models
+
+* Version 6.11.1 - 01 mrt 2021
+    * Added Nuget SymbolPackage
+
+* Version 6.11.0 - 01 mrt 2021
+    * Fixed position models
+    * Fixed reduceOnly parameter on PlaceMultipleOrder method
+    * Added transactionFeeFlag on Withdraw method
+    * Added config for deterministic build
+    * Updated CryptoExchange.Net
+
+* Version 6.10.0 - 22 feb 2021
+    * IndexPrice added to BinanceFurustMarkPrice
+    * Removed deprecated accountInfo update from userDataStream
+    * Updated spot Order models
+
+* Version 6.9.1 - 18 feb 2021
+    * Fixed inconsistent naming GetPrices
+
+* Version 6.9.0 - 18 feb 2021
+    * Updated withdraw models
+    * Brokerage API updates
+    * Updated GetPrice for coin futures
+    * Fixed Swap quantity parameter
+    * Added limit parameter to GetDividendRecords
+
+* Version 6.8.2 - 11 feb 2021
+    * Fixed more HttpMethods
+
+* Version 6.8.1 - 11 feb 2021
+    * Fixed GetOpenOrder endpoint on futures
+    * Fixed HttpMethods in subaccount calls
+
+* Version 6.8.0 - 09 feb 2021
+    * Fixed stopPrice AutoComply trade rules behavior
+    * Fixed position models
+
+* Version 6.7.0 - 05 feb 2021
+    * Fixed Mark stream update model
+    * Added onLeverageUpdate to futures user stream subscription
+    * Updated futures position info models
+
+* Version 6.6.4 - 22 jan 2021
+    * Fixed GetSubAccountsFuturesSummary http method
+    * Moved FirstUpdateId in order book model
+    * Updated for ICommonKline
+
+* Version 6.6.3 - 11 jan 2021
+    * Added missing enum values
+
+* Version 6.6.2 - 11 jan 2021
+    * Updated futures Symbol models for GetExchangeInfo
+    * Updated CryptoExchange.Net
+    * Added Pre-Settle symbol status to fix deserialization issue
+
+* Version 6.6.1 - 05 jan 2021
+    * Fixed contractType deserialization
+
+* Version 6.6.0 - 05 jan 2021
+    * Updated orderbook models
+    * Fixed GetExchangeInfo deserialization for Futures
+
 * Version 6.5.0 - 21 dec 2020
     * Updated Brokerage API
     * Fix for SubAccountToSubAccount email parameter serialization

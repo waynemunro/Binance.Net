@@ -28,6 +28,7 @@ namespace Binance.Net.SubClients.Futures.Usdt
         private const string historicalTradesEndpoint = "historicalTrades";
         private const string markPriceEndpoint = "premiumIndex";
         private const string price24HEndpoint = "ticker/24hr";
+        private const string allPricesEndpoint = "ticker/price";
         private const string bookPricesEndpoint = "ticker/bookTicker";
         private const string allForcedOrdersEndpoint = "allForceOrders";
         private const string openInterestEndpoint = "openInterest";
@@ -212,7 +213,6 @@ namespace Binance.Net.SubClients.Futures.Usdt
         /// <returns>The candlestick data for the provided symbol</returns>
         public override async Task<WebCallResult<IEnumerable<IBinanceKline>>> GetKlinesAsync(string symbol, KlineInterval interval, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
-            symbol.ValidateBinanceSymbol();
             limit?.ValidateIntBetween(nameof(limit), 1, 1500);
             var parameters = new Dictionary<string, object> {
                 { "symbol", symbol },
@@ -439,6 +439,50 @@ namespace Binance.Net.SubClients.Futures.Usdt
             return await BaseClient.SendRequestInternal<IEnumerable<BinanceFuturesCompositeIndexInfo>>(FuturesClient.GetUrl(compositeIndexApi, Api, publicVersion), HttpMethod.Get, ct, parameters).ConfigureAwait(false);
         }
 
+        #endregion
+
+        #region Get price
+
+        /// <summary>
+        /// Gets the price of a symbol
+        /// </summary>
+        /// <param name="symbol">The symbol to get the price for</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>Price of symbol</returns>
+        public WebCallResult<BinancePrice> GetPrice(string symbol, CancellationToken ct = default) => GetPriceAsync(symbol, ct).Result;
+
+        /// <summary>
+        /// Gets the price of a symbol
+        /// </summary>
+        /// <param name="symbol">The symbol to get the price for</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>Price of symbol</returns>
+        public async Task<WebCallResult<BinancePrice>> GetPriceAsync(string symbol, CancellationToken ct = default)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "symbol", symbol }
+            };
+
+            return await BaseClient.SendRequestInternal<BinancePrice>(FuturesClient.GetUrl(allPricesEndpoint, Api, publicVersion), HttpMethod.Get, ct, parameters).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get a list of the prices of all symbols
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>List of prices</returns>
+        public WebCallResult<IEnumerable<BinancePrice>> GetPrices(CancellationToken ct = default) => GetPricesAsync(ct).Result;
+
+        /// <summary>
+        /// Get a list of the prices of all symbols
+        /// </summary>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns>List of prices</returns>
+        public async Task<WebCallResult<IEnumerable<BinancePrice>>> GetPricesAsync(CancellationToken ct = default)
+        {
+            return await BaseClient.SendRequestInternal<IEnumerable<BinancePrice>>(FuturesClient.GetUrl(allPricesEndpoint, Api, publicVersion), HttpMethod.Get, ct).ConfigureAwait(false);
+        }
         #endregion
     }
 }

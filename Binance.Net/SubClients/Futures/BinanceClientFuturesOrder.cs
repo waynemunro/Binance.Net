@@ -169,7 +169,8 @@ namespace Binance.Net.SubClients.Futures
 
             quantity = rulesCheck.Quantity;
             price = rulesCheck.Price;
-            
+            stopPrice = rulesCheck.StopPrice;
+
             var parameters = new Dictionary<string, object>
             {
                 { "symbol", symbol },
@@ -243,6 +244,7 @@ namespace Binance.Net.SubClients.Futures
 
                     order.Quantity = rulesCheck.Quantity;
                     order.Price = rulesCheck.Price;
+                    order.StopPrice = rulesCheck.StopPrice;
                 }
             }
 
@@ -272,7 +274,7 @@ namespace Binance.Net.SubClients.Futures
                 orderParameters.AddOptionalParameter("activationPrice", order.ActivationPrice?.ToString(CultureInfo.InvariantCulture));
                 orderParameters.AddOptionalParameter("callbackRate", order.CallbackRate?.ToString(CultureInfo.InvariantCulture));
                 orderParameters.AddOptionalParameter("workingType", order.WorkingType == null ? null : JsonConvert.SerializeObject(order.WorkingType, new WorkingTypeConverter(false)));
-                orderParameters.AddOptionalParameter("reduceOnly", order.ReduceOnly);
+                orderParameters.AddOptionalParameter("reduceOnly", order.ReduceOnly?.ToString().ToLower());
                 parameterOrders[i] = orderParameters;
                 i++;
             }
@@ -479,7 +481,7 @@ namespace Binance.Net.SubClients.Futures
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Id's for canceled order</returns>
-        public WebCallResult<List<BinanceFuturesCancelOrder>> CancelMultipleOrders(string symbol, List<long>? orderIdList = null, List<string>? origClientOrderIdList = null, long? receiveWindow = null, CancellationToken ct = default) => CancelMultipleOrdersAsync(symbol, orderIdList, origClientOrderIdList, receiveWindow, ct).Result;
+        public WebCallResult<IEnumerable<CallResult<BinanceFuturesCancelOrder>>> CancelMultipleOrders(string symbol, List<long>? orderIdList = null, List<string>? origClientOrderIdList = null, long? receiveWindow = null, CancellationToken ct = default) => CancelMultipleOrdersAsync(symbol, orderIdList, origClientOrderIdList, receiveWindow, ct).Result;
 
         /// <summary>
         /// Cancels multiple orders
@@ -490,11 +492,11 @@ namespace Binance.Net.SubClients.Futures
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Id's for canceled order</returns>
-        public async Task<WebCallResult<List<BinanceFuturesCancelOrder>>> CancelMultipleOrdersAsync(string symbol, List<long>? orderIdList = null, List<string>? origClientOrderIdList = null, long? receiveWindow = null, CancellationToken ct = default)
+        public async Task<WebCallResult<IEnumerable<CallResult<BinanceFuturesCancelOrder>>>> CancelMultipleOrdersAsync(string symbol, List<long>? orderIdList = null, List<string>? origClientOrderIdList = null, long? receiveWindow = null, CancellationToken ct = default)
         {
             var timestampResult = await BaseClient.CheckAutoTimestamp(ct).ConfigureAwait(false);
             if (!timestampResult)
-                return new WebCallResult<List<BinanceFuturesCancelOrder>>(timestampResult.ResponseStatusCode, timestampResult.ResponseHeaders, null, timestampResult.Error);
+                return new WebCallResult<IEnumerable<CallResult<BinanceFuturesCancelOrder>>>(timestampResult.ResponseStatusCode, timestampResult.ResponseHeaders, null, timestampResult.Error);
 
             if (orderIdList == null && origClientOrderIdList == null)
                 throw new ArgumentException("Either orderIdList or origClientOrderIdList must be sent");
@@ -519,7 +521,21 @@ namespace Binance.Net.SubClients.Futures
 
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? BaseClient.DefaultReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            return await BaseClient.SendRequestInternal<List<BinanceFuturesCancelOrder>>(FuturesClient.GetUrl(cancelMultipleOrdersEndpoint, Api, SignedVersion), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
+            var response = await BaseClient.SendRequestInternal<IEnumerable<BinanceFuturesMultipleOrderCancelResult>>(FuturesClient.GetUrl(cancelMultipleOrdersEndpoint, Api, SignedVersion), HttpMethod.Delete, ct, parameters, true).ConfigureAwait(false);
+
+            if (!response.Success)
+                return WebCallResult<IEnumerable<CallResult<BinanceFuturesCancelOrder>>>.CreateErrorResult(response.ResponseStatusCode, response.ResponseHeaders, response.Error!);
+
+            var result = new List<CallResult<BinanceFuturesCancelOrder>>();
+            foreach (var item in response.Data)
+            {
+                if (item.Code != 0)
+                    result.Add(new CallResult<BinanceFuturesCancelOrder>(null, new ServerError(item.Code, item.Message)));
+                else
+                    result.Add(new CallResult<BinanceFuturesCancelOrder>(item, null));
+            }
+
+            return new WebCallResult<IEnumerable<CallResult<BinanceFuturesCancelOrder>>>(response.ResponseStatusCode, response.ResponseHeaders, result, null);
         }
 
         #endregion
@@ -527,7 +543,7 @@ namespace Binance.Net.SubClients.Futures
         #region Query Current Open Order
 
         /// <summary>
-        /// Retrieves data for a specific current orders. Either orderId or origClientOrderId should be provided.
+        /// Retrieves data for a specific open order. Either orderId or origClientOrderId should be provided.
         /// </summary>
         /// <param name="symbol">The symbol the order is for</param>
         /// <param name="orderId">The order id of the order</param>
@@ -535,10 +551,10 @@ namespace Binance.Net.SubClients.Futures
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>The specific order</returns>
-        public WebCallResult<IEnumerable<BinanceFuturesOrder>> GetOpenOrders(string symbol, long? orderId = null, string? origClientOrderId = null, long? receiveWindow = null, CancellationToken ct = default) => GetOpenOrdersAsync(symbol, orderId, origClientOrderId, receiveWindow, ct).Result;
+        public WebCallResult<BinanceFuturesOrder> GetOpenOrder(string symbol, long? orderId = null, string? origClientOrderId = null, long? receiveWindow = null, CancellationToken ct = default) => GetOpenOrderAsync(symbol, orderId, origClientOrderId, receiveWindow, ct).Result;
 
         /// <summary>
-        /// Retrieves data for a specific current orders. Either orderId or origClientOrderId should be provided.
+        /// Retrieves data for a specific open order. Either orderId or origClientOrderId should be provided.
         /// </summary>
         /// <param name="symbol">The symbol the order is for</param>
         /// <param name="orderId">The order id of the order</param>
@@ -546,14 +562,14 @@ namespace Binance.Net.SubClients.Futures
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>The specific order</returns>
-        public async Task<WebCallResult<IEnumerable<BinanceFuturesOrder>>> GetOpenOrdersAsync(string symbol, long? orderId = null, string? origClientOrderId = null, long? receiveWindow = null, CancellationToken ct = default)
+        public async Task<WebCallResult<BinanceFuturesOrder>> GetOpenOrderAsync(string symbol, long? orderId = null, string? origClientOrderId = null, long? receiveWindow = null, CancellationToken ct = default)
         {
             if (orderId == null && origClientOrderId == null)
                 throw new ArgumentException("Either orderId or origClientOrderId must be sent");
 
             var timestampResult = await BaseClient.CheckAutoTimestamp(ct).ConfigureAwait(false);
             if (!timestampResult)
-                return new WebCallResult<IEnumerable<BinanceFuturesOrder>>(timestampResult.ResponseStatusCode, timestampResult.ResponseHeaders, null, timestampResult.Error);
+                return new WebCallResult<BinanceFuturesOrder>(timestampResult.ResponseStatusCode, timestampResult.ResponseHeaders, null, timestampResult.Error);
 
             var parameters = new Dictionary<string, object>
             {
@@ -564,7 +580,7 @@ namespace Binance.Net.SubClients.Futures
             parameters.AddOptionalParameter("origClientOrderId", origClientOrderId);
             parameters.AddOptionalParameter("recvWindow", receiveWindow?.ToString(CultureInfo.InvariantCulture) ?? BaseClient.DefaultReceiveWindow.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-            return await BaseClient.SendRequestInternal<IEnumerable<BinanceFuturesOrder>>(FuturesClient.GetUrl(openOrderEndpoint, Api, SignedVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);
+            return await BaseClient.SendRequestInternal<BinanceFuturesOrder>(FuturesClient.GetUrl(openOrderEndpoint, Api, SignedVersion), HttpMethod.Get, ct, parameters, true).ConfigureAwait(false);
         }
 
         #endregion

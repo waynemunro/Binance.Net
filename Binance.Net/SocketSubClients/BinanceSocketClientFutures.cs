@@ -34,6 +34,7 @@ namespace Binance.Net.SocketSubClients
         private const string partialBookDepthStreamEndpoint = "@depth";
         private const string depthStreamEndpoint = "@depth";
 
+        private const string configUpdateEvent = "ACCOUNT_CONFIG_UPDATE";
         private const string marginUpdateEvent = "MARGIN_CALL";
         private const string accountUpdateEvent = "ACCOUNT_UPDATE";
         private const string orderUpdateEvent = "ORDER_TRADE_UPDATE";
@@ -376,7 +377,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public CallResult<UpdateSubscription> SubscribeToPartialOrderBookUpdates(string symbol, int levels, int? updateInterval, Action<IBinanceOrderBook> onMessage) => SubscribeToPartialOrderBookUpdatesAsync(symbol, levels, updateInterval, onMessage).Result;
+        public CallResult<UpdateSubscription> SubscribeToPartialOrderBookUpdates(string symbol, int levels, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage) => SubscribeToPartialOrderBookUpdatesAsync(symbol, levels, updateInterval, onMessage).Result;
 
         /// <summary>
         /// Subscribes to the depth updates for the provided symbol
@@ -386,7 +387,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public async Task<CallResult<UpdateSubscription>> SubscribeToPartialOrderBookUpdatesAsync(string symbol, int levels, int? updateInterval, Action<IBinanceOrderBook> onMessage) => await SubscribeToPartialOrderBookUpdatesAsync(new[] { symbol }, levels, updateInterval, onMessage).ConfigureAwait(false);
+        public async Task<CallResult<UpdateSubscription>> SubscribeToPartialOrderBookUpdatesAsync(string symbol, int levels, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage) => await SubscribeToPartialOrderBookUpdatesAsync(new[] { symbol }, levels, updateInterval, onMessage).ConfigureAwait(false);
 
         /// <summary>
         /// Subscribes to the depth updates for the provided symbols
@@ -396,7 +397,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public CallResult<UpdateSubscription> SubscribeToPartialOrderBookUpdates(IEnumerable<string> symbols, int levels, int? updateInterval, Action<IBinanceOrderBook> onMessage) => SubscribeToPartialOrderBookUpdatesAsync(symbols, levels, updateInterval, onMessage).Result;
+        public CallResult<UpdateSubscription> SubscribeToPartialOrderBookUpdates(IEnumerable<string> symbols, int levels, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage) => SubscribeToPartialOrderBookUpdatesAsync(symbols, levels, updateInterval, onMessage).Result;
 
         /// <summary>
         /// Subscribes to the depth updates for the provided symbols
@@ -406,7 +407,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public async Task<CallResult<UpdateSubscription>> SubscribeToPartialOrderBookUpdatesAsync(IEnumerable<string> symbols, int levels, int? updateInterval, Action<IBinanceOrderBook> onMessage)
+        public async Task<CallResult<UpdateSubscription>> SubscribeToPartialOrderBookUpdatesAsync(IEnumerable<string> symbols, int levels, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage)
         {
             symbols.ValidateNotNull(nameof(symbols));
             levels.ValidateIntValues(nameof(levels), 5, 10, 20);
@@ -433,7 +434,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public CallResult<UpdateSubscription> SubscribeToOrderBookUpdates(string symbol, int? updateInterval, Action<IBinanceOrderBook> onMessage) => SubscribeToOrderBookUpdatesAsync(symbol, updateInterval, onMessage).Result;
+        public CallResult<UpdateSubscription> SubscribeToOrderBookUpdates(string symbol, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage) => SubscribeToOrderBookUpdatesAsync(symbol, updateInterval, onMessage).Result;
 
         /// <summary>
         /// Subscribes to the order book updates for the provided symbol
@@ -442,7 +443,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public async Task<CallResult<UpdateSubscription>> SubscribeToOrderBookUpdatesAsync(string symbol, int? updateInterval, Action<IBinanceOrderBook> onMessage) => await SubscribeToOrderBookUpdatesAsync(new[] { symbol }, updateInterval, onMessage).ConfigureAwait(false);
+        public async Task<CallResult<UpdateSubscription>> SubscribeToOrderBookUpdatesAsync(string symbol, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage) => await SubscribeToOrderBookUpdatesAsync(new[] { symbol }, updateInterval, onMessage).ConfigureAwait(false);
 
         /// <summary>
         /// Subscribes to the depth update stream for the provided symbols
@@ -451,7 +452,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public CallResult<UpdateSubscription> SubscribeToOrderBookUpdates(IEnumerable<string> symbols, int? updateInterval, Action<IBinanceOrderBook> onMessage) => SubscribeToOrderBookUpdatesAsync(symbols, updateInterval, onMessage).Result;
+        public CallResult<UpdateSubscription> SubscribeToOrderBookUpdates(IEnumerable<string> symbols, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage) => SubscribeToOrderBookUpdatesAsync(symbols, updateInterval, onMessage).Result;
 
         /// <summary>
         /// Subscribes to the depth update stream for the provided symbols
@@ -460,7 +461,7 @@ namespace Binance.Net.SocketSubClients
         /// <param name="updateInterval">Update interval in milliseconds, either 100, 250 or 500. Defaults to 250</param>
         /// <param name="onMessage">The event handler for the received data</param>
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
-        public async Task<CallResult<UpdateSubscription>> SubscribeToOrderBookUpdatesAsync(IEnumerable<string> symbols, int? updateInterval, Action<IBinanceOrderBook> onMessage)
+        public async Task<CallResult<UpdateSubscription>> SubscribeToOrderBookUpdatesAsync(IEnumerable<string> symbols, int? updateInterval, Action<IBinanceFuturesEventOrderBook> onMessage)
         {
             symbols.ValidateNotNull(nameof(symbols));
 
@@ -478,6 +479,7 @@ namespace Binance.Net.SocketSubClients
         /// Subscribes to the account update stream. Prior to using this, the BinanceClient.Futures.UserStreams.StartUserStream method should be called.
         /// </summary>
         /// <param name="listenKey">Listen key retrieved by the StartUserStream method</param>
+        /// <param name="onLeverageUpdate">The event handler for leverage changed update</param>
         /// <param name="onMarginUpdate">The event handler for whenever a margin has changed</param>
         /// <param name="onAccountUpdate">The event handler for whenever an account update is received</param>
         /// <param name="onOrderUpdate">The event handler for whenever an order status update is received</param>
@@ -485,15 +487,17 @@ namespace Binance.Net.SocketSubClients
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
         public CallResult<UpdateSubscription> SubscribeToUserDataUpdates(
             string listenKey,
-             Action<BinanceFuturesStreamMarginUpdate>? onMarginUpdate,
+            Action<BinanceFuturesStreamConfigUpdate>? onLeverageUpdate,
+            Action<BinanceFuturesStreamMarginUpdate>? onMarginUpdate,
             Action<BinanceFuturesStreamAccountUpdate>? onAccountUpdate,
             Action<BinanceFuturesStreamOrderUpdate>? onOrderUpdate,
-            Action<BinanceStreamEvent> onListenKeyExpired) => SubscribeToUserDataUpdatesAsync(listenKey, onMarginUpdate, onAccountUpdate, onOrderUpdate, onListenKeyExpired).Result;
+            Action<BinanceStreamEvent> onListenKeyExpired) => SubscribeToUserDataUpdatesAsync(listenKey, onLeverageUpdate, onMarginUpdate, onAccountUpdate, onOrderUpdate, onListenKeyExpired).Result;
 
         /// <summary>
         /// Subscribes to the account update stream. Prior to using this, the BinanceClient.Futures.UserStreams.StartUserStream method should be called.
         /// </summary>
         /// <param name="listenKey">Listen key retrieved by the StartUserStream method</param>
+        /// <param name="onLeverageUpdate">The event handler for leverage changed update</param>
         /// <param name="onMarginUpdate">The event handler for whenever a margin has changed</param>
         /// <param name="onAccountUpdate">The event handler for whenever an account update is received</param>
         /// <param name="onOrderUpdate">The event handler for whenever an order status update is received</param>
@@ -501,6 +505,7 @@ namespace Binance.Net.SocketSubClients
         /// <returns>A stream subscription. This stream subscription can be used to be notified when the socket is disconnected/reconnected</returns>
         public async Task<CallResult<UpdateSubscription>> SubscribeToUserDataUpdatesAsync(
             string listenKey,
+            Action<BinanceFuturesStreamConfigUpdate>? onLeverageUpdate,
             Action<BinanceFuturesStreamMarginUpdate>? onMarginUpdate,
             Action<BinanceFuturesStreamAccountUpdate>? onAccountUpdate,
             Action<BinanceFuturesStreamOrderUpdate>? onOrderUpdate,
@@ -517,6 +522,18 @@ namespace Binance.Net.SocketSubClients
 
                 switch (evnt)
                 {
+                    case configUpdateEvent:
+                        {
+                            Log.Write(LogVerbosity.Debug, data);
+
+                            var result = BaseClient.DeserializeInternal<BinanceFuturesStreamConfigUpdate>(token, false);
+                            if (result)
+                                onLeverageUpdate?.Invoke(result.Data);
+                            else
+                                Log.Write(LogVerbosity.Warning, "Couldn't deserialize data received from config stream: " + result.Error);
+
+                            break;
+                        }
                     case marginUpdateEvent:
                         {
                             Log.Write(LogVerbosity.Debug, data);

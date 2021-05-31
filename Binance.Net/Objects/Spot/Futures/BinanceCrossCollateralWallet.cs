@@ -18,6 +18,14 @@ namespace Binance.Net.Objects.Spot.Futures
         /// </summary>
         public decimal TotalBorrowed { get; set; }
         /// <summary>
+        /// Total interest
+        /// </summary>
+        public decimal TotalInterest { get; set; }
+        /// <summary>
+        /// Interest free limit
+        /// </summary>
+        public decimal InterestFreeLimit { get; set; }
+        /// <summary>
         /// The asset
         /// </summary>
         public string Asset { get; set; } = "";
@@ -32,6 +40,10 @@ namespace Binance.Net.Objects.Spot.Futures
     /// </summary>
     public class BinanceCrossCollateralWalletEntry
     {
+        /// <summary>
+        /// Loan coin
+        /// </summary>
+        public string LoanCoin { get; set; } = "";
         /// <summary>
         /// Collateral coin
         /// </summary>
@@ -48,5 +60,17 @@ namespace Binance.Net.Objects.Spot.Futures
         /// Current collateral rate
         /// </summary>
         public decimal CurrentCollateralRate { get; set; }
+        /// <summary>
+        /// Used interest free limit
+        /// </summary>
+        public decimal InterestFreeLimitUsed { get; set; }
+        /// <summary>
+        /// Principal interest
+        /// </summary>
+        public decimal PrincipalForInterest { get; set; }
+        /// <summary>
+        /// Interest
+        /// </summary>
+        public decimal Interest { get; set; }
     }
 }

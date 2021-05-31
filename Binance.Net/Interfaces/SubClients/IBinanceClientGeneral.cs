@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Binance.Net.Enums;
 using Binance.Net.Objects;
 using Binance.Net.Objects.Spot.MarginData;
 using Binance.Net.Objects.Spot.SpotData;
@@ -11,7 +12,7 @@ using CryptoExchange.Net.Objects;
 namespace Binance.Net.Interfaces.SubClients
 {
     /// <summary>
-    /// General interface
+    /// General endpoints
     /// </summary>
     public interface IBinanceClientGeneral
     {
@@ -161,12 +162,13 @@ namespace Binance.Net.Interfaces.SubClients
         /// Get asset dividend records
         /// </summary>
         /// <param name="asset">Filter by asset</param>
-        /// /// <param name="startTime">Filter by start time from</param>
+        /// <param name="startTime">Filter by start time from</param>
         /// <param name="endTime">Filter by end time till</param>
+        /// <param name="limit">Page size</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Dividend records</returns>
-        WebCallResult<BinanceQueryRecords<BinanceDividendRecord>> GetAssetDividendRecords(string? asset = null, DateTime? startTime = null, DateTime? endTime = null, int? receiveWindow = null, CancellationToken ct = default);
+        WebCallResult<BinanceQueryRecords<BinanceDividendRecord>> GetAssetDividendRecords(string? asset = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, int? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
         /// Get asset dividend records
@@ -174,10 +176,11 @@ namespace Binance.Net.Interfaces.SubClients
         /// <param name="asset">Filter by asset</param>
         /// /// <param name="startTime">Filter by start time from</param>
         /// <param name="endTime">Filter by end time till</param>
+        /// <param name="limit">Page size</param>
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Dividend records</returns>
-        Task<WebCallResult<BinanceQueryRecords<BinanceDividendRecord>>> GetAssetDividendRecordsAsync(string? asset = null, DateTime? startTime = null, DateTime? endTime = null, int? receiveWindow = null, CancellationToken ct = default);
+        Task<WebCallResult<BinanceQueryRecords<BinanceDividendRecord>>> GetAssetDividendRecordsAsync(string? asset = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, int? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
         /// This request will disable fastwithdraw switch under your account.
@@ -228,7 +231,7 @@ namespace Binance.Net.Interfaces.SubClients
         /// <param name="ct">Cancellation token</param>
         /// <returns>The history of dust conversions</returns>
         WebCallResult<IEnumerable<BinanceDustLog>> GetDustLog(int? receiveWindow = null, CancellationToken ct = default);
-       
+
         /// <summary>
         /// Gets the history of dust conversions
         /// </summary>
@@ -244,8 +247,7 @@ namespace Binance.Net.Interfaces.SubClients
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Dust transfer result</returns>
-        WebCallResult<BinanceDustTransferResult> DustTransfer(IEnumerable<string> assets, int? receiveWindow = null,
-            CancellationToken ct = default);
+        WebCallResult<BinanceDustTransferResult> DustTransfer(IEnumerable<string> assets, int? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
         /// Converts dust (small amounts of) assets to BNB 
@@ -254,8 +256,7 @@ namespace Binance.Net.Interfaces.SubClients
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns>Dust transfer result</returns>
-        Task<WebCallResult<BinanceDustTransferResult>> DustTransferAsync(IEnumerable<string> assets,
-            int? receiveWindow = null, CancellationToken ct = default);
+        Task<WebCallResult<BinanceDustTransferResult>> DustTransferAsync(IEnumerable<string> assets, int? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
         /// Gets the status of the BNB burn switch for spot trading and margin interest
@@ -264,7 +265,7 @@ namespace Binance.Net.Interfaces.SubClients
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
         WebCallResult<BinanceBnbBurnStatus> GetBnbBurnStatus(int? receiveWindow = null, CancellationToken ct = default);
-        
+
         /// <summary>
         /// Gets the status of the BNB burn switch for spot trading and margin interest
         /// </summary>
@@ -281,8 +282,7 @@ namespace Binance.Net.Interfaces.SubClients
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
-        WebCallResult<BinanceBnbBurnStatus> SetBnbBurnStatus(bool? spotTrading = null,
-            bool? marginInterest = null, int? receiveWindow = null, CancellationToken ct = default);
+        WebCallResult<BinanceBnbBurnStatus> SetBnbBurnStatus(bool? spotTrading = null, bool? marginInterest = null, int? receiveWindow = null, CancellationToken ct = default);
 
         /// <summary>
         /// Sets the status of the BNB burn switch for spot trading and margin interest
@@ -292,7 +292,30 @@ namespace Binance.Net.Interfaces.SubClients
         /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
         /// <param name="ct">Cancellation token</param>
         /// <returns></returns>
-        Task<WebCallResult<BinanceBnbBurnStatus>> SetBnbBurnStatusAsync(bool? spotTrading = null,
-            bool? marginInterest = null, int? receiveWindow = null, CancellationToken ct = default);
+        Task<WebCallResult<BinanceBnbBurnStatus>> SetBnbBurnStatusAsync(bool? spotTrading = null, bool? marginInterest = null, int? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Transfers between accounts
+        /// </summary>
+        /// <param name="type">The type of transfer</param>
+        /// <param name="asset">The asset to transfer</param>
+        /// <param name="amount">The amount to transfer</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<BinanceTransaction>> Transfer(UniversalTransferType type, string asset, decimal amount, int? receiveWindow = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Get transfer history
+        /// </summary>
+        /// <param name="type">The type of transfer</param>
+        /// <param name="startTime">Filter by startTime</param>
+        /// <param name="endTime">Filter by endTime</param>
+        /// <param name="page">The page</param>
+        /// <param name="pageSize">Results per page</param>
+        /// <param name="receiveWindow">The receive window for which this request is active. When the request takes longer than this to complete the server will reject the request</param>
+        /// <param name="ct">Cancellation token</param>
+        /// <returns></returns>
+        Task<WebCallResult<BinanceQueryRecords<BinanceTransfer>>> GetTransfers(UniversalTransferType type, DateTime? startTime = null, DateTime? endTime = null, int? page = null, int? pageSize = null, int? receiveWindow = null, CancellationToken ct = default);
     }
 }
